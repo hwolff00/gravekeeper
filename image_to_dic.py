@@ -2,7 +2,6 @@ from PIL import Image
 import os
 import pytesseract
 import pickle
-#print(pickle.__file__)
 import nltk
 
 directory = "pics"
@@ -44,10 +43,8 @@ def unpickle(name):
     with open('obj/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
-#tokenized_dic = tagged_dic()
-
 if __name__ == "__main__":
     tag_dic = tagged_dic()
     #print(dir(pickle))
     pickles(tag_dic, "tagged")
-    print(unpickle("tagged"))
+    #print(unpickle("tagged"))
