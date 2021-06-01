@@ -6,213 +6,200 @@ import time
 import logging
 import traceback
 import random
-
 import rctogether
+import pickle
+import re
+import datetime
+from collections import defaultdict
 
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.INFO)
 
-# Home. (Where the Hop starts.)
-# Control computer. (Note block check for name.)
+# Home (Where HopBot starts.)
 
 HOME = {"x": 6, "y": 1}
-EMMA_BOT = {"x": 4, "y": 4}
-EMMA_BOT2 = {"x": 18, "y": 4}
-TEST_BOT2000 = {"x": 1, "y": 18}
-TEST_BOT_NEW_NAME = {"x": 5, "y": 22}
 
-# CONTROL_COMPUTER = {"x": 27, "y": 61}
-# LAUNCH_PAD = {"x": 25, "y": 60}
+TOUR_POSITIONS = [{"name": "emma-bot", "x": 4, "y": 4},
+{"name": "the furthest emma-bot", "x": 18, "y": 4},
+{"name": "Testbot2000", "x": 1, "y": 18},
+{"name": "TestbotNewName", "x": 5, "y": 22}]
+
 
 TARGETS = {}
 ROCKET_LOCATION = None
 
-def normalise_name(name):
-    if name is None:
-        return None
-    return name.strip("\n\r\t \u200b")
 
-def first_name(s):
-    return s.split(" ")[0]
+def unpickle(name):
+    with open('obj/' + name + '.pkl', 'rb') as f:
+        return pickle.load(f)
 
-def debris_message(emoji, target, instigator):
-    return PAYLOADS[emoji] % {
-        "victim": first_name(target),
-        "instigator": first_name(instigator),
-    }
+tokenized_dic = unpickle("tagged")
 
+TECH = ["unit tests", "b-trees", "linked lists", "Schemas", "bytes", "booleans",
+        "chars", "nodes", "vertices", "arrays", "constants", 'Docker containers',
+        "black-box testing"]
 
-PAYLOADS = {
-    "💥": "%(victim)s was exploded by %(instigator)s",
-    "🎉": "%(victim)s was aggressively thanked by %(instigator)s",
-    "🐄": "COW!!!!!",
-    "🔥": "%(victim)s is on fire",
-    "💧": "WATER FIGHT!",
-    "🌈": "%(victim)s got their groove back!",
-    "💕": "%(victim)s was valentined by a secret admirer",
-    "🦆": "Look at %(instigator)s's duck! QUACK! QUACK!",
-    "🍅": "%(victim)s was booed off stage by %(instigator)s",
-    "🥉": "%(victim)s was THIRD PLACED by %(instigator)s",
-    "☎️": "Hello. We’ve been trying to reach you with a message regarding your car’s extended warranty...",
-    "💍": "%(instigator)s has proposed to %(victim)s at a sporting event.",
-    "🦕": "Life finds a way.",
-    "🍀": "%(instigator)s has sent good luck to %(victim)s.",
-    "🪴": "%(instigator)s gave %(victim)s a nice gift! But can they keep it alive?",
-    "🏉": "OUCH. %(instigator)s just threw a ball at %(victim)s's head.",
-    "🦌": "%(victim)s was mowed down by an errant deer.",
-    "🧸": "Sometimes %(victim)s just needs a cozy hug.",
-    "🐣": "%(instigator)s has bequeathed %(victim)s with newfound responsibilites!"
-}
+BAD_TECH = ["memory leaks", "HTTP 404 ERROR: Not Founds", "SQL injections",
+            "bad cron jobs", "data integrity errors", "constraint violations",
+            "illegal access", "illegal operations", "HTTP 418: I'm a teapots",
+            "dead locks", "live locks", "syntax errors", "stack overflows",
+            "buffer overruns", "side channel vulnerabilities",
+            "underflow errors", "segmentation faults", "broken pipes",
+            "index out of bounds", "user errors", "metaclass conflicts",
+            "cd: /home: No such file or directory issues", "timeout issues",
+           "race conditions", "type mismatches", "inexhaustive pattern matches",
+           "redundant pattern matches", "compiler errors"]
 
+WOW = ["The Big Moments Are Going To Come. You Can't Help That. It's What You Do Afterwards That Counts.",
+         "I May Be Dead, But I'm Still Pretty.", "The Hardest Thing In This World Is To Live In It. Be Brave. Live… For Me.",
+         "I laugh in the face of danger. Then I hide until it goes away.",
+         "Sometimes the most adult thing you can do is ask for help when you need it.",
+         "There’s more than one way to skin a cat, and I happen to know that’s factually true."]
 
-class Bot:
-    def __init__(self, name, emoji, x, y):
-        self.bot_json = rctogether.create_bot(name=name, emoji=emoji, x=x, y=y)
-        self.queue = eventlet.Queue()
-        eventlet.spawn(self.run)
+SCRIPTS = ["Our life was all {} until it became {}.".format(t, b),
+"{} {} the {} {} {}. Finally there would be no more {}!".format(Pronoun.capitalize(), Past_Verb, t, IN.lower(), Second_Plural_Noun,  b),
+"{} was born out of {} and {} due to {}.".format(name, t, Past_Verb, b),
+"{} {} {} but it also {} them.".format(b.capitalize(), Past_Verb, name, Second_Past_Verb)
+]
 
-    @property
-    def id(self):
-        return self.bot_json["id"]
-
-    def run(self):
-        while True:
-            update = self.queue.get()
-            while not self.queue.empty():
-                print("Skipping outdated update: ", update)
-                update = self.queue.get()
-            print("Applying update: ", update)
-            eventlet.sleep(1)
-            rctogether.update_bot(self.bot_json["id"], update)
-
-    def update(self, update):
-        self.queue.put(update)
-
-    def update_data(self, data):
-        self.bot_json = data
+# Past_Verb = random.choice(tokenized_dic["VBN"])
+# Second_Past_Verb = random.choice(tokenized_dic["VBN"])
+# Pronoun = random.choice(tokenized_dic["PRP"])
+# Plural_Noun = random.choice(tokenized_dic["NNS"])
+# Second_Plural_Noun = random.choice(tokenized_dic["NNS"])
+# DT = random.choice(tokenized_dic["DT"])
+# IN = random.choice(tokenized_dic["IN"])
+# t = random.choice(TECH)
+# b = random.choice(BAD_TECH)
+# name = "TestbotNewName"
 
 
-class ClankyBotLauchSystem:
+# def story(name):
+#     return random.choice(SCRIPTS)
+#
+# def words_of_wisdom():
+#     return random.choice(WOW)
+#
+def response_handler(commands, pattern):
+    def handler(f):
+        commands.append((pattern, f))
+        return f
+    return handler
+
+class Gravekeeper:
+    COMMANDS = []
+
     def __init__(self):
-        self.instigator = None
-        self.target = "Nobody"
-        self.rocket = Bot(name="Rocket Bot", emoji="🚀", x=LAUNCH_PAD["x"], y=LAUNCH_PAD["y"])
-        self.gc_bot = GarbageCollectionBot()
+        self.Hop = None
+        self.processed_message_dt = datetime.datetime.utcnow()
 
-    def respawn_rocket(self):
-        self.instigator = None
-        self.rocket = Bot(name="Rocket Bot", emoji="🚀", x=LAUNCH_PAD["x"], y=LAUNCH_PAD["y"])
-        self.target = "Nobody"
+        for bot in rctogether.get_bots():
+            if bot["emoji"] == "🧛‍":
+                print("Found Hop!")
+                self.Hop = rctogether.Bot(bot, print)
+            else:
+                if bot.get("message"):
+                    owner_id = bot["message"]["mentioned_entity_ids"][0]
 
-    def handle_instruction(self, entity):
-        print("New instructions received: ", entity)
-        note_text = entity.get("note_text")
-        if note_text == "":
-            self.instigator = None
-            self.target = "Nobody"
-            self.rocket.update(LAUNCH_PAD)
-        else:
-            self.instigator = entity.get("updated_by").get("name")
-            self.target = normalise_name(note_text)
-            if self.target in TARGETS:
-                self.rocket.update(TARGETS[self.target])
-
-    def handle_rocket_move(self, entity):
-        self.rocket.update_data(entity)
-        rocket_position = entity["pos"]
-        target_position = TARGETS.get(self.target)
-
-        print("TARGET HIT: ", rocket_position, target_position)
-        if rocket_position == target_position:
-            emoji = random.choice(list(PAYLOADS))
-            self.rocket.update(
-                {
-                    "emoji": emoji,
-                    "name": debris_message(emoji, self.target, self.instigator)
-                }
+    def undying(self):
+        if not self.Hop:
+            self.Hop = subscription.create_bot(
+                name = "HopBot",
+                emoji = "🧛‍",
+                x = HOME["x"],
+                y = HOME["y"],
+                can_be_mentioned=True,
+                handle_update=print,
             )
-            self.gc_bot.add_garbage(self.rocket.bot_json)
-            self.respawn_rocket()
 
-    def handle_target_detected(self, entity):
-        target_position = entity["pos"]
-        print("Target detected at: ", target_position)
-        self.rocket.update(target_position)
+    # def get_by_name(self, animal_name):
+    #     for animal in self.available_animals.values():
+    #         if animal.name == animal_name:
+    #             return animal
+    #     return None
 
+    # def random_available_animal(self):
+    #     return random.choice(list(self.available_animals.values()))
+    #
+    # def random_owned(self, owner):
+    #     return random.choice(self.owned_animals[owner['id']])
+
+    def send_message(self, recipient, message_text, sender=None):
+        sender = sender or self.Hop
+        rctogether.send_message(
+            sender.id, f"@**{recipient['person_name']}** {message_text}"
+        )
+
+
+    # @response_handler(COMMANDS, "adopt (a|an|the|one)? ([A-Za-z-]+),? please")
+    # def handle_adoption(self, adopter, match):
+    #     animal_name = match.groups()[1]
+    #
+    #     if animal_name == "horse":
+    #         return "Sorry, that's just a picture of a horse."
+    #
+    #     if animal_name == "genie":
+    #         return "You can't adopt me. I'm not a pet!"
+    #
+    #     animal = self.get_by_name(animal_name)
+    #
+    #     if not animal:
+    #         alternative = self.random_available_animal().name
+    #         return f"Sorry, we don't have {a_an(animal_name)} at the moment, perhaps you'd like {a_an(alternative)} instead?"
+    #
+    #     self.send_message(adopter, NOISES.get(animal.emoji, '💖'), animal)
+    #
+    #     rctogether.update_bot(
+    #         animal.id, {"name": f"{adopter['person_name']}'s {animal.name}"}
+    #     )
+    #     del self.available_animals[position_tuple(animal.bot_json["pos"])]
+    #     self.owned_animals[adopter["id"]].append(animal)
+    #
+    #     return None
+
+    @response_handler(COMMANDS, r"word")
+    def words_of_wisdom(self, adopter, match):
+        return random.choice(WOW)
+
+    @response_handler(COMMANDS, "thank")
+    def handle_thanks(self, adopter, match):
+        return random.choice(["Of course.", "❤️"])
+
+    def handle_mention(self, adopter, message):
+        for (pattern, handler) in self.COMMANDS:
+            match = re.search(pattern, message["text"], re.IGNORECASE)
+            if match:
+                response = handler(self, adopter, match)
+                if response:
+                    self.send_message(adopter, response)
+                return
+
+        self.send_message(
+            adopter, "I don't understand the question and I won't respond."
+        )
 
     def handle_entity(self, entity):
-        person_name = normalise_name(entity.get("person_name"))
-        if person_name:
-            TARGETS[person_name] = entity["pos"]
+        if entity["type"] == "Avatar":
+            message = entity.get("message")
 
-        if entity.get("app") and entity["app"]["name"] == "rocket":
-            print("App entity update: ", entity)
+            if message and self.Hop.id in message["mentioned_entity_ids"]:
+                message_dt = datetime.datetime.strptime(
+                    message["sent_at"], "%Y-%m-%dT%H:%M:%SZ"
+                )
+                if message_dt <= self.processed_message_dt:
+                    print("Skipping old message: ", message)
+                else:
+                    self.handle_mention(entity, message)
+                    self.processed_message_dt = message_dt
 
-        if person_name == self.target:
-            self.handle_target_detected(entity)
+        # if entity["type"] == "Avatar":
+        #     for animal in self.owned_animals.get(entity["id"], []):
+        #         print(entity)
+        #         position = offset_position(entity["pos"], random.choice(DELTAS))
+        #         print(f"Moving {animal} to {position}")
+        #         animal.update(position)
 
-        elif entity.get("pos") == {"x": 27, "y": 61}:
-            self.handle_instruction(entity)
-
-        elif entity["id"] == self.rocket.id:
-            self.handle_rocket_move(entity)
-
-        elif entity["id"] == self.gc_bot.id:
-            self.gc_bot.handle_update(entity)
-
-class GarbageCollectionBot:
-    def __init__(self):
-        self.garbage_bot = Bot(name="Garbage Collector", emoji="🛺", x=22, y=61)
-        self.garbage_queue = eventlet.Queue()
-        self.garbage = None
-
-        eventlet.spawn(self.run)
-
-    def run(self):
-        while True:
-            if self.garbage_queue.qsize() <= 3:
-                print("Not enough garbage, let's just rest a bit!")
-                eventlet.sleep(60)
-            elif self.garbage:
-                print("Hey, we're already busy here.")
-                eventlet.sleep(60)
-            else:
-                self.collect(self.garbage_queue.get())
-
-    @property
-    def id(self):
-        return self.garbage_bot.id
-
-    def add_garbage(self, garbage):
-        self.garbage_queue.put(garbage)
-
-    def collect(self, garbage):
-        self.garbage = garbage
-        print("Crew dispatched to collect: ", self.garbage)
-        self.garbage_bot.update(self.garbage["pos"])
-
-    def complete_collection(self):
-        eventlet.sleep(15)
-        print("Ready to complete collection!")
-        rctogether.delete_bot(self.garbage["id"])
-        self.garbage = None
-        self.garbage_bot.update({"x": 22, "y": 61})
-
-    def handle_update(self, entity):
-        if self.garbage and entity["pos"] == self.garbage["pos"]:
-            print("Collection complete: ", entity, self.garbage)
-            eventlet.spawn(self.complete_collection)
-
-def main():
-    try:
-        rctogether.clean_up_bots()
-
-        launch_system = ClankyBotLauchSystem()
-
-        subscription = rctogether.RcTogether(callbacks=[launch_system.handle_entity])
-        subscription.block_until_done()
-    finally:
-        print("Exiting... cleaning up.")
-        rctogether.clean_up_bots()
 
 if __name__ == '__main__':
-    main()
+    agency = Agency()
+    subscription = rctogether.RcTogether(callbacks=[agency.handle_entity])
+    subscription.block_until_done()
