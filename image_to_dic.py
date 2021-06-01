@@ -2,12 +2,14 @@ from PIL import Image
 import os
 import pytesseract
 import pickle
+#print(pickle.__file__)
+import nltk
 
 directory = "pics"
 
-def stringify(directory) -> lst:
+def stringify(dir):
     words = []
-    for entry in os.scandir(directory):
+    for entry in os.scandir(dir):
         image = Image.open(entry.path)
         image = image.convert('L')
         text = pytesseract.image_to_string(image)
@@ -16,15 +18,15 @@ def stringify(directory) -> lst:
 
 #print(stringify())
 
-def tag() -> None:
+def tag():
     tagged = []
-    words = stringify()
+    words = stringify(directory)
     for i in words:
         tokenized = nltk.word_tokenize(i)
         tagged += nltk.pos_tag(tokenized) #tagging creates a tuple of the (word, pos) -> ("I", "PRP")
     return tagged
 
-def tagged_dic() -> dict:
+def tagged_dic():
     tokenized_dic = {}
     tagged = tag()
     for word, pos in tagged:
@@ -34,18 +36,18 @@ def tagged_dic() -> dict:
             tokenized_dic[pos] = tokenized_dic.get(pos, []) + [word]
     return tokenized_dic
 
-
-def pickle(obj, name) -> None:
-    with open('/'+ name + '.pkl', 'wb') as f:
+def pickles(obj, name):
+    with open('obj/' + name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-def unpickle(name) -> dict:
+def unpickle(name):
     with open('obj/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
+#tokenized_dic = tagged_dic()
+
 if __name__ == "__main__":
-    tokenized_dic = tagged_dic()
-    pickle(tokenized_dic, "dic")
-    pic = unpickle()
-    print(pic)
-    print(type(pic))
+    tag_dic = tagged_dic()
+    #print(dir(pickle))
+    pickles(tag_dic, "tagged")
+    print(unpickle("tagged"))
