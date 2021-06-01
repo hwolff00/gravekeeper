@@ -55,11 +55,11 @@ WOW = ["The Big Moments Are Going To Come. You Can't Help That. It's What You Do
          "Sometimes the most adult thing you can do is ask for help when you need it.",
          "There’s more than one way to skin a cat, and I happen to know that’s factually true."]
 
-SCRIPTS = ["Our life was all {} until it became {}.".format(t, b),
-"{} {} the {} {} {}. Finally there would be no more {}!".format(Pronoun.capitalize(), Past_Verb, t, IN.lower(), Second_Plural_Noun,  b),
-"{} was born out of {} and {} due to {}.".format(name, t, Past_Verb, b),
-"{} {} {} but it also {} them.".format(b.capitalize(), Past_Verb, name, Second_Past_Verb)
-]
+# SCRIPTS = ["Our life was all {} until it became {}.".format(t, b),
+# "{} {} the {} {} {}. Finally there would be no more {}!".format(Pronoun.capitalize(), Past_Verb, t, IN.lower(), Second_Plural_Noun,  b),
+# "{} was born out of {} and {} due to {}.".format(name, t, Past_Verb, b),
+# "{} {} {} but it also {} them.".format(b.capitalize(), Past_Verb, name, Second_Past_Verb)
+# ]
 
 # Past_Verb = random.choice(tokenized_dic["VBN"])
 # Second_Past_Verb = random.choice(tokenized_dic["VBN"])
@@ -200,6 +200,6 @@ class Gravekeeper:
 
 
 if __name__ == '__main__':
-    agency = Agency()
-    subscription = rctogether.RcTogether(callbacks=[agency.handle_entity])
+    gravekeeper = Gravekeeper()
+    subscription = rctogether.RcTogether(callbacks=[gravekeeper.handle_entity])
     subscription.block_until_done()
