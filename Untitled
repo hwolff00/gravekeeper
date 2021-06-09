@@ -1,7 +1,0 @@
-
-import rctogether
-
-
-subscription = rctogether.RcTogether()
-octopus = subscription.create_bot(name="HopBot", emoji="🧛‍", x=6, y=1)
-subscription.block_until_done()
