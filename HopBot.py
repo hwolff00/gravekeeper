@@ -5,12 +5,10 @@ import re
 import random
 import time
 
+#-------------------------------------------------------------------------------
 # Home (Where HopBot starts.)
-
-
 Home = {"x": 6, "y": 1}
-Away = {"x": 4, "y": 4}
-#
+
 Tour_positions = [{"name": "emma-bot", "pos": {"x": 4, "y": 4}},
 {"name": "emma-bot", "pos": {"x": 4, "y": 3}},
 {"name": "emma-bot", "pos": {"x": 1, "y": 3}},
@@ -25,9 +23,10 @@ Tour_positions = [{"name": "emma-bot", "pos": {"x": 4, "y": 4}},
 {"name": "Testbot2000", "pos": {"x": 4, "y": 20}},
 {"name": "TestbotNewName", "pos": {"x": 5, "y": 22}}]
 
-
+# Randomize which tour location and bot Hop will talk about
 tour = random.choice(Tour_positions)
-
+#-------------------------------------------------------------------------------
+# Language section
 #
 # def unpickle(name):
 #     with open('obj/' + name + '.pkl', 'rb') as f:
@@ -51,7 +50,8 @@ tour = random.choice(Tour_positions)
 #            "redundant pattern matches", "compiler errors"]
 #
 # WOW = ["The Big Moments Are Going To Come. You Can't Help That. It's What You Do Afterwards That Counts.",
-#          "I May Be Dead, But I'm Still Pretty.", "The Hardest Thing In This World Is To Live In It. Be Brave. Live… For Me.",
+#          "I May Be Dead, But I'm Still Pretty.",
+#          "The Hardest Thing In This World Is To Live In It. Be Brave. Live… For Me.",
 #          "I laugh in the face of danger. Then I hide until it goes away.",
 #          "Sometimes the most adult thing you can do is ask for help when you need it.",
 #          "There’s more than one way to skin a cat, and I happen to know that’s factually true."]
@@ -83,22 +83,38 @@ tour = random.choice(Tour_positions)
 #TODO fix speeches formatting
 #TODO make it so HopBot only speaks when mentioned
 
-#dict_keys(['id', 'type', 'pos', 'emoji', 'direction', 'can_be_mentioned', 'app', 'name', 'display_name', 'message'])
+# #dict_keys(['id', 'type', 'pos', 'emoji', 'direction', 'can_be_mentioned', 'app', 'name', 'display_name', 'message'])
 async def main():
     async with RestApiSession() as session:
         for i in await bots.get(session):
             if i['emoji'] == "🧛":
                 print("Found Hop!")
-                #print(i["id"])
+                print(i["id"])
                 if i["pos"] == Home:
-                    #await messages.send(session, i["id"], "🦇")
+                    await messages.send(session, i["id"], f"@**Hannah Wolff** Hiya!")
                     await bots.update(session, i["id"], tour["pos"])
                     print(tour["name"])
                     time.sleep(6)
                     await bots.update(session, i["id"], Home)
                 if i["pos"] != Home:
                     await bots.update(session, i["id"], Home)
-                    #await self.particle.update(PARTICLE_HOME)
+
 
 
 asyncio.run(main())
+
+
+#'@**HopBot (bot)** hi'
+
+# import asyncio
+# from rctogether import WebsocketSubscription
+#
+# async def main():
+#     async for message in WebsocketSubscription():
+#         for key, value in message.items():
+#             if type(value) is dict and 'mentioned_entity_ids' in value.keys():
+#                     if value['mentioned_entity_ids'] == [92348]:
+#                         print(f"@**{message['person_name']} Hiya!")
+#
+#
+# asyncio.run(main())
