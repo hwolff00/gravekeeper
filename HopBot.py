@@ -29,7 +29,7 @@ Tour_positions = [{"name": "emma-bot", "pos": {"x": 4, "y": 4}},
 # Randomize which tour location and bot Hop will talk about
 tour = random.choice(Tour_positions)
 #-------------------------------------------------------------------------------
-# Language section
+# Language/mad libs section
 
 def unpickle(name):
     with open('obj/' + name + '.pkl', 'rb') as f:
@@ -71,7 +71,8 @@ Bad_Tech = random.choice(BAD_TECH)
 SCRIPTS = [f"Our life was all {Tech} until it became {Bad_Tech}.",
 f"{Pronoun.capitalize()} {Past_Verb} the {Tech} {IN.lower()} {Second_Plural_Noun}. Finally there would be no more {Bad_Tech}!",
 f"{tour['name']} was born out of {Tech} and {Past_Verb} due to {Bad_Tech}.",
-f"{Bad_Tech.capitalize()} {Past_Verb} {tour['name']} but it also {Second_Past_Verb} them."
+f"{Bad_Tech.capitalize()} {Past_Verb} {tour['name']} but it also {Second_Past_Verb} them.",
+f'Sometimes I can still hear their electromagnetic vibrations. They say, "BEWARE OF {Bad_Tech.upper()}"'
 ]
 
 def story():
@@ -95,6 +96,9 @@ async def speech(session, id, message):
     elif re.search("word", message["message"]["text"], re.IGNORECASE):
         await messages.send(session, id, f"@**{message['person_name']}** {words_of_wisdom()}")
     elif re.search("twilight", message["message"]["text"], re.IGNORECASE):
+        print("I'm personally more of an Anne Rice fan.")
+        await messages.send(session, id, f"@**{message['person_name']}** I'm personally more of an Anne Rice fan.")
+    elif re.search("sparkle", message["message"]["text"], re.IGNORECASE):
         print("I don't understand the question and I won't respond. 🍷")
         await messages.send(session, id, f"@**{message['person_name']}** I don't understand the question and I won't respond. 🍷")
     elif re.search("buffy", message["message"]["text"], re.IGNORECASE):
@@ -123,19 +127,24 @@ async def awakening(message):
 
 async def main():
     processed_message_dt = datetime.datetime.utcnow()
-    async for message in WebsocketSubscription():
-        for key, value in message.items():
-            if type(value) is dict and 'mentioned_entity_ids' in value.keys():
-                    if value['mentioned_entity_ids'] == [92348]:
-                        # print(message['message']['sent_at'])
-                        message_dt = datetime.datetime.strptime(message['message']['sent_at'], "%Y-%m-%dT%H:%M:%SZ")
-                        if message_dt <= processed_message_dt:
-                            print("Skipping old message")
-                            # print(message)
-                        else:
-                            processed_message_dt = message_dt
-                            await awakening(message)
+    # While loop to help with socket disconnections
+    while True:
+        try:
+            print('Websocket is NOT connected. Reconnecting...')
+            async for message in WebsocketSubscription():
+                for key, value in message.items():
+                    if type(value) is dict and 'mentioned_entity_ids' in value.keys():
+                            if value['mentioned_entity_ids'] == [92348]:
+                                # print(message['message']['sent_at'])
+                                message_dt = datetime.datetime.strptime(message['message']['sent_at'], "%Y-%m-%dT%H:%M:%SZ")
+                                if message_dt <= processed_message_dt:
+                                    print("Skipping old message")
+                                else:
+                                    processed_message_dt = message_dt
+                                    await awakening(message)
+        except:
+            print('Unable to reconnect, trying again.')
 
 
-
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
