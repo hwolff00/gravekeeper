@@ -7,6 +7,8 @@ import random
 import datetime
 import time
 #-------------------------------------------------------------------------------
+# Location Section
+
 # Home (Where HopBot starts.)
 Home = {"x": 6, "y": 1}
 
@@ -28,7 +30,7 @@ Tour_positions = [{"name": "emma-bot", "pos": {"x": 4, "y": 4}},
 tour = random.choice(Tour_positions)
 #-------------------------------------------------------------------------------
 # Language section
-#
+
 def unpickle(name):
     with open('obj/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
@@ -72,9 +74,6 @@ f"{tour['name']} was born out of {Tech} and {Past_Verb} due to {Bad_Tech}.",
 f"{Bad_Tech.capitalize()} {Past_Verb} {tour['name']} but it also {Second_Past_Verb} them."
 ]
 
-COMMANDS = []
-#-------------------------------------------------------------------------------
-
 def story():
     return f"{random.choice(['Ah, yes I remember', 'Did you know', 'Have I ever told you about'])} {tour['name']}: {random.choice(SCRIPTS)}"
 
@@ -82,25 +81,28 @@ def words_of_wisdom():
     return random.choice(WOW)
 
 #-------------------------------------------------------------------------------
-#TODO make this code less insane
-#TODO add in input functionality
+#TODO make speech less insane
+
 async def movement(session, id):
     await bots.update(session, id, tour["pos"])
-    time.sleep(6)
+    await asyncio.sleep(6)
     await bots.update(session, id, Home)
 
-async def speak(session, id, message):
+async def speech(session, id, message):
     if re.search("thank", message["message"]["text"], re.IGNORECASE):
         print("You're vvelcome 🦇!")
         await messages.send(session, id, f"@**{message['person_name']}** You're vvelcome 🦇!")
     elif re.search("word", message["message"]["text"], re.IGNORECASE):
-        await messages.send(session, id, f"@**{message['person_name']}** words_of_wisdom()")
+        await messages.send(session, id, f"@**{message['person_name']}** {words_of_wisdom()}")
     elif re.search("twilight", message["message"]["text"], re.IGNORECASE):
         print("I don't understand the question and I won't respond. 🍷")
         await messages.send(session, id, f"@**{message['person_name']}** I don't understand the question and I won't respond. 🍷")
     elif re.search("buffy", message["message"]["text"], re.IGNORECASE):
         print("I'm not much of a singer. But you can ask me for words of wisdom. 🥀")
         await messages.send(session, id, f"@**{message['person_name']}** I'm not much of a singer. But you can ask me for words of wisdom. 🥀")
+    elif re.search("adventure", message["message"]["text"], re.IGNORECASE):
+        print("Big fan of the bacon pancakes.")
+        await messages.send(session, id, f"@**{message['person_name']}** Big fan of the bacon pancakes.")
     elif re.search("tour", message["message"]["text"], re.IGNORECASE):
         await messages.send(session, id, f"@**{message['person_name']}** {story()}")
         await movement(session, id)
@@ -116,8 +118,7 @@ async def awakening(message):
                 if bot["pos"] != Home:
                     await bots.update(session, bot["id"], Home)
 
-                await speak(session, bot["id"], message)
-
+                await speech(session, bot["id"], message)
 
 
 async def main():
