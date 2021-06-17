@@ -97,11 +97,15 @@ async def speak(session, id, message):
         await messages.send(session, id, f"@**{message['person_name']}** words_of_wisdom()")
     elif re.search("twilight", message["message"]["text"], re.IGNORECASE):
         print("I don't understand the question and I won't respond. 🍷")
+        await messages.send(session, id, f"@**{message['person_name']}** I don't understand the question and I won't respond. 🍷")
     elif re.search("buffy", message["message"]["text"], re.IGNORECASE):
         print("I'm not much of a singer. But you can ask me for words of wisdom. 🥀")
+        await messages.send(session, id, f"@**{message['person_name']}** I'm not much of a singer. But you can ask me for words of wisdom. 🥀")
     elif re.search("tour", message["message"]["text"], re.IGNORECASE):
         await messages.send(session, id, f"@**{message['person_name']}** {story()}")
         await movement(session, id)
+    else:
+        await messages.send(session, id, f"@**{message['person_name']}** I don't understand. Would you like a tour?")
 
 async def awakening(message):
     async with RestApiSession() as session:
