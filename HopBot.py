@@ -52,7 +52,6 @@ BAD_TECH = ["memory leaks", "HTTP 404 ERROR: Not Founds", "SQL injections",
 
 WOW = ["The Big Moments Are Going To Come. You Can't Help That. It's What You Do Afterwards That Counts.",
          "I May Be Dead, But I'm Still Pretty.",
-         "The Hardest Thing In This World Is To Live In It. Be Brave. Live… For Me.",
          "I laugh in the face of danger. Then I hide until it goes away.",
          "Sometimes the most adult thing you can do is ask for help when you need it.",
          "There’s more than one way to skin a cat, and I happen to know that’s factually true."]
@@ -93,6 +92,25 @@ def response_handler(commands, pattern):
 #TODO make this code less insane
 #TODO add in input functionality
 
+async def speak(session, id, message):
+    await messages.send(session, id, f"@**{message['person_name']}** {story()}")
+
+async def movement(message):
+    async with RestApiSession() as session:
+        for bot in await bots.get(session):
+            if bot['emoji'] == "🧛":
+                print("Found Hop!")
+                # print(i["id"])
+                if bot["pos"] == Home:
+                    await speak(session, bot["id"], message)
+                    await bots.update(session, bot["id"], tour["pos"])
+                    # print(story())
+                    time.sleep(6)
+                    await bots.update(session, bot["id"], Home)
+                if bot["pos"] != Home:
+                    await bots.update(session, bot["id"], Home)
+
+
 async def main():
     processed_message_dt = datetime.datetime.utcnow()
     async for message in WebsocketSubscription():
@@ -103,22 +121,10 @@ async def main():
                         message_dt = datetime.datetime.strptime(message['message']['sent_at'], "%Y-%m-%dT%H:%M:%SZ")
                         if message_dt <= processed_message_dt:
                             print("Skipping old message")
-                            # print(message['person_name'])
+                            # print(message)
                         else:
                             processed_message_dt = message_dt
-                            async with RestApiSession() as session:
-                                for bot in await bots.get(session):
-                                    if bot['emoji'] == "🧛":
-                                        print("Found Hop!")
-                                        # print(i["id"])
-                                        if bot["pos"] == Home:
-                                            await messages.send(session, bot["id"], f"@**{message['person_name']}** {story()}")
-                                            await bots.update(session, bot["id"], tour["pos"])
-                                            # print(story())
-                                            time.sleep(6)
-                                            await bots.update(session, bot["id"], Home)
-                                        if bot["pos"] != Home:
-                                            await bots.update(session, bot["id"], Home)
+                            await movement(message)
 
 
 
