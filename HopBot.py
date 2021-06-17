@@ -81,34 +81,39 @@ def story():
 def words_of_wisdom():
     return random.choice(WOW)
 
-def response_handler(commands, pattern):
-    def handler(f):
-        commands.append((pattern, f))
-        return f
-
-    return handler
-
 #-------------------------------------------------------------------------------
 #TODO make this code less insane
 #TODO add in input functionality
+async def movement(session, id):
+    await bots.update(session, id, tour["pos"])
+    time.sleep(6)
+    await bots.update(session, id, Home)
 
 async def speak(session, id, message):
-    await messages.send(session, id, f"@**{message['person_name']}** {story()}")
+    if re.search("thank", message["message"]["text"], re.IGNORECASE):
+        print("You're vvelcome 🦇!")
+        await messages.send(session, id, f"@**{message['person_name']}** You're vvelcome 🦇!")
+    elif re.search("word", message["message"]["text"], re.IGNORECASE):
+        await messages.send(session, id, f"@**{message['person_name']}** words_of_wisdom()")
+    elif re.search("twilight", message["message"]["text"], re.IGNORECASE):
+        print("I don't understand the question and I won't respond. 🍷")
+    elif re.search("buffy", message["message"]["text"], re.IGNORECASE):
+        print("I'm not much of a singer. But you can ask me for words of wisdom. 🥀")
+    elif re.search("tour", message["message"]["text"], re.IGNORECASE):
+        await messages.send(session, id, f"@**{message['person_name']}** {story()}")
+        await movement(session, id)
 
-async def movement(message):
+async def awakening(message):
     async with RestApiSession() as session:
         for bot in await bots.get(session):
             if bot['emoji'] == "🧛":
                 print("Found Hop!")
                 # print(i["id"])
-                if bot["pos"] == Home:
-                    await speak(session, bot["id"], message)
-                    await bots.update(session, bot["id"], tour["pos"])
-                    # print(story())
-                    time.sleep(6)
-                    await bots.update(session, bot["id"], Home)
                 if bot["pos"] != Home:
                     await bots.update(session, bot["id"], Home)
+
+                await speak(session, bot["id"], message)
+
 
 
 async def main():
@@ -124,7 +129,7 @@ async def main():
                             # print(message)
                         else:
                             processed_message_dt = message_dt
-                            await movement(message)
+                            await awakening(message)
 
 
 
