@@ -6,6 +6,7 @@ import nltk
 
 directory = "pics"
 
+
 def stringify(dir):
     words = []
     for entry in os.scandir(dir):
@@ -15,15 +16,18 @@ def stringify(dir):
         words += [word for word in text.split()]
     return words
 
-#print(stringify())
+# print(stringify())
+
 
 def tag():
     tagged = []
     words = stringify(directory)
     for i in words:
         tokenized = nltk.word_tokenize(i)
-        tagged += nltk.pos_tag(tokenized) #tagging creates a tuple of the (word, pos) -> ("I", "PRP")
+        # tagging creates a tuple of the (word, pos) -> ("I", "PRP")
+        tagged += nltk.pos_tag(tokenized)
     return tagged
+
 
 def tagged_dic():
     tokenized_dic = {}
@@ -35,16 +39,19 @@ def tagged_dic():
             tokenized_dic[pos] = tokenized_dic.get(pos, []) + [word]
     return tokenized_dic
 
+
 def pickles(obj, name):
     with open('obj/' + name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
 
 def unpickle(name):
     with open('obj/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
+
 if __name__ == "__main__":
     tag_dic = tagged_dic()
-    #print(dir(pickle))
+    # print(dir(pickle))
     pickles(tag_dic, "tagged")
-    #print(unpickle("tagged"))
+    # print(unpickle("tagged"))
